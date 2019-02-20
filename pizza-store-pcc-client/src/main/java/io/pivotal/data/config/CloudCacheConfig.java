@@ -2,6 +2,7 @@ package io.pivotal.data.config;
 
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.gemfire.cache.config.EnableGemfireCaching;
 import org.springframework.data.gemfire.config.annotation.EnableEntityDefinedRegions;
 import org.springframework.data.gemfire.config.annotation.EnableLogging;
 import org.springframework.data.gemfire.repository.config.EnableGemfireRepositories;
@@ -14,8 +15,10 @@ import org.springframework.geode.config.annotation.UseMemberName;
 @ComponentScan(basePackages = "io.pivotal.data.continuousquery")
 @EnableLogging(logLevel = "info")
 @UseMemberName("PccApiClient")
+@EnableGemfireCaching
 @Configuration
 public class CloudCacheConfig {
+
 
 
 }

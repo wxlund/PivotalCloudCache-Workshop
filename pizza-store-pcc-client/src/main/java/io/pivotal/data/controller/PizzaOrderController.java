@@ -25,7 +25,7 @@ import io.pivotal.data.repo.PizzaOrderRepo;
 import io.pivotal.data.service.CustomerSearchService;
 
 @RestController
-@DependsOn({"gemfireCache"})
+@DependsOn({ "gemfireCache" })
 public class PizzaOrderController {
 
 	@Autowired
@@ -42,16 +42,16 @@ public class PizzaOrderController {
 
 	Fairy fairy = Fairy.create();
 
-
 	@RequestMapping(method = RequestMethod.GET, path = "/loaddb")
 	@ResponseBody
 	public String loadDB(@RequestParam(value = "amount", required = true) String amount) throws Exception {
 
 		Integer num = Integer.parseInt(amount);
 
-		for (int i=0; i<num; i++) {
+		for (int i = 0; i < num; i++) {
 			Person person = fairy.person();
-			Customer customer = new Customer(person.passportNumber(), person.fullName(), person.email(), person.getAddress().toString(), person.dateOfBirth().toString());
+			Customer customer = new Customer(person.passportNumber(), person.fullName(), person.email(),
+					person.getAddress().toString(), person.dateOfBirth().toString());
 			jpaCustomerRepository.save(customer);
 		}
 
@@ -65,7 +65,7 @@ public class PizzaOrderController {
 		StringBuilder result = new StringBuilder();
 		Pageable topTen = new PageRequest(0, 10);
 
-		jpaCustomerRepository.findAll(topTen).forEach(item->result.append(item+"<br/>"));
+		jpaCustomerRepository.findAll(topTen).forEach(item -> result.append(item + "<br/>"));
 
 		return "First 10 customers are show here: <br/>" + result.toString();
 	}
@@ -74,11 +74,8 @@ public class PizzaOrderController {
 	@ResponseBody
 	public String showAvailablePizzas() throws Exception {
 
-		return "<b>Lets Order Some Pizza <br/></b>"
-				+ "-------------------------------"
-				+ "<br/>"
-				+ "<h3>types: plain, fancy</h3>"
-				+ "<br/>"
+		return "<b>Lets Order Some Pizza <br/></b>" + "-------------------------------" + "<br/>"
+				+ "<h3>types: plain, fancy</h3>" + "<br/>"
 				+ "GET /orderPizza?email={emailId}&type={pizzaType}  - Order a pizza <br/>"
 				+ "GET /orders?email={emailId}               - get specific value <br/>";
 
@@ -87,15 +84,13 @@ public class PizzaOrderController {
 	@RequestMapping(method = RequestMethod.GET, path = "/orderPizza")
 	@ResponseBody
 	public String orderPizza(@RequestParam(value = "email", required = true) String email,
-			@RequestParam(value = "type", required = true) String pizzaType)
-			throws Exception {
+			@RequestParam(value = "type", required = true) String pizzaType) throws Exception {
 
 		long startTime = System.currentTimeMillis();
 		Customer customer = customerSearchService.getCustomerByEmail(email);
 		long elapsedTime = System.currentTimeMillis();
 		Boolean isCacheMiss = customerSearchService.isCacheMiss();
 		String sourceFrom = isCacheMiss ? "MySQL" : "PCC";
-
 
 		PizzaOrder pizzaObject = createPizzaObject(pizzaType);
 		String orderId = customer.getEmail() + Calendar.getInstance().getTimeInMillis();
@@ -104,10 +99,10 @@ public class PizzaOrderController {
 
 		pizzaOrderRepo.save(pizzaObject);
 
-		return String.format("Result [<b>%1$s</b>] <br/>"
-				+ "Cache Miss for Customer [<b>%2$s</b>] <br/>"
-				+ "Read from [<b>%3$s</b>] <br/>"
-				+ "Elapsed Time [<b>%4$s ms</b>]%n", pizzaObject, isCacheMiss, sourceFrom, (elapsedTime - startTime));
+		return String.format(
+				"Result [<b>%1$s</b>] <br/>" + "Cache Miss for Customer [<b>%2$s</b>] <br/>"
+						+ "Read from [<b>%3$s</b>] <br/>" + "Elapsed Time [<b>%4$s ms</b>]%n",
+				pizzaObject, isCacheMiss, sourceFrom, (elapsedTime - startTime));
 	}
 
 	@RequestMapping(method = RequestMethod.GET, path = "/orders")
@@ -119,13 +114,13 @@ public class PizzaOrderController {
 		List<PizzaOrder> pizzaObjects = pizzaOrderRepo.findPizzaOrderByEmailId(email);
 		long elapsedTime = System.currentTimeMillis();
 
-	    if (pizzaObjects != null && pizzaObjects.size() > 0) {
+		if (pizzaObjects != null && pizzaObjects.size() > 0) {
 
-	    	pizzaObjects.forEach(item -> result.append(item + "</br>"));
+			pizzaObjects.forEach(item -> result.append(item + "</br>"));
 
-	    	return String.format("Result [<b>%1$s</b>] <br/>"
-	    			+ "Elapsed Time [<b>%2$s ms</b>]%n", result.toString(), (elapsedTime - startTime));
-	    }
+			return String.format("Result [<b>%1$s</b>] <br/>" + "Elapsed Time [<b>%2$s ms</b>]%n", result.toString(),
+					(elapsedTime - startTime));
+		}
 		return "No Results Found.";
 	}
 
@@ -134,9 +129,9 @@ public class PizzaOrderController {
 		PizzaOrder pizza = null;
 
 		if (pizzaType != null) {
-			if(pizzaType.equalsIgnoreCase("plain")) {
+			if (pizzaType.equalsIgnoreCase("plain")) {
 				pizza = makePlainPizza();
-			} else if(pizzaType.equalsIgnoreCase("fancy")) {
+			} else if (pizzaType.equalsIgnoreCase("fancy")) {
 				pizza = makeFancyPizza();
 			}
 		}
@@ -144,16 +139,16 @@ public class PizzaOrderController {
 	}
 
 	private PizzaOrder makeFancyPizza() {
-        Set<String> toppings = new HashSet<>();
-        toppings.add("chicken");
-        toppings.add("arugula");
-        return new PizzaOrder("fancy", toppings, "pesto");
-    }
+		Set<String> toppings = new HashSet<>();
+		toppings.add("chicken");
+		toppings.add("arugula");
+		return new PizzaOrder("fancy", toppings, "pesto");
+	}
 
-    private PizzaOrder makePlainPizza() {
-        Set<String> toppings = new HashSet<>();
-        toppings.add("cheese");
-        return new PizzaOrder("plain", toppings, "red");
-    }
+	private PizzaOrder makePlainPizza() {
+		Set<String> toppings = new HashSet<>();
+		toppings.add("cheese");
+		return new PizzaOrder("plain", toppings, "red");
+	}
 
 }
